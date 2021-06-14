@@ -1,0 +1,1136 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:25.271471Z",
+     "start_time": "2021-04-15T03:10:24.971637Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import math\n",
+    "\n",
+    "import warnings\n",
+    "warnings.filterwarnings('ignore')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# import data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.466193Z",
+     "start_time": "2021-04-15T03:10:25.273379Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "data = pd.read_excel('card transactions.xlsx',\\\n",
+    "                     dtype={'Merch zip': 'str', 'Merch state': 'str'})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.497836Z",
+     "start_time": "2021-04-15T03:10:32.467831Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Recnum</th>\n",
+       "      <th>Cardnum</th>\n",
+       "      <th>Date</th>\n",
+       "      <th>Merchnum</th>\n",
+       "      <th>Merch description</th>\n",
+       "      <th>Merch state</th>\n",
+       "      <th>Merch zip</th>\n",
+       "      <th>Transtype</th>\n",
+       "      <th>Amount</th>\n",
+       "      <th>Fraud</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>5142190439</td>\n",
+       "      <td>2010-01-01</td>\n",
+       "      <td>5509006296254</td>\n",
+       "      <td>FEDEX SHP 12/23/09 AB#</td>\n",
+       "      <td>TN</td>\n",
+       "      <td>38118</td>\n",
+       "      <td>P</td>\n",
+       "      <td>3.62</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>5142183973</td>\n",
+       "      <td>2010-01-01</td>\n",
+       "      <td>61003026333</td>\n",
+       "      <td>SERVICE MERCHANDISE #81</td>\n",
+       "      <td>MA</td>\n",
+       "      <td>01803</td>\n",
+       "      <td>P</td>\n",
+       "      <td>31.42</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>5142131721</td>\n",
+       "      <td>2010-01-01</td>\n",
+       "      <td>4503082993600</td>\n",
+       "      <td>OFFICE DEPOT #191</td>\n",
+       "      <td>MD</td>\n",
+       "      <td>20706</td>\n",
+       "      <td>P</td>\n",
+       "      <td>178.49</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>5142148452</td>\n",
+       "      <td>2010-01-01</td>\n",
+       "      <td>5509006296254</td>\n",
+       "      <td>FEDEX SHP 12/28/09 AB#</td>\n",
+       "      <td>TN</td>\n",
+       "      <td>38118</td>\n",
+       "      <td>P</td>\n",
+       "      <td>3.62</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>5142190439</td>\n",
+       "      <td>2010-01-01</td>\n",
+       "      <td>5509006296254</td>\n",
+       "      <td>FEDEX SHP 12/23/09 AB#</td>\n",
+       "      <td>TN</td>\n",
+       "      <td>38118</td>\n",
+       "      <td>P</td>\n",
+       "      <td>3.62</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>96748</th>\n",
+       "      <td>96749</td>\n",
+       "      <td>5142276053</td>\n",
+       "      <td>2010-12-31</td>\n",
+       "      <td>3500000006160</td>\n",
+       "      <td>BEST BUY      00001610</td>\n",
+       "      <td>KY</td>\n",
+       "      <td>41042</td>\n",
+       "      <td>P</td>\n",
+       "      <td>84.79</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>96749</th>\n",
+       "      <td>96750</td>\n",
+       "      <td>5142225701</td>\n",
+       "      <td>2010-12-31</td>\n",
+       "      <td>8090710030950</td>\n",
+       "      <td>MARKUS OFFICE SUPPLIES</td>\n",
+       "      <td>OH</td>\n",
+       "      <td>45248</td>\n",
+       "      <td>P</td>\n",
+       "      <td>118.75</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>96750</th>\n",
+       "      <td>96751</td>\n",
+       "      <td>5142226486</td>\n",
+       "      <td>2010-12-31</td>\n",
+       "      <td>4503057341100</td>\n",
+       "      <td>TECH PAC, INC</td>\n",
+       "      <td>OH</td>\n",
+       "      <td>45150</td>\n",
+       "      <td>P</td>\n",
+       "      <td>363.56</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>96751</th>\n",
+       "      <td>96752</td>\n",
+       "      <td>5142244619</td>\n",
+       "      <td>2010-12-31</td>\n",
+       "      <td>8834000695412</td>\n",
+       "      <td>BUY.COM</td>\n",
+       "      <td>CA</td>\n",
+       "      <td>92656</td>\n",
+       "      <td>P</td>\n",
+       "      <td>2202.03</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>96752</th>\n",
+       "      <td>96753</td>\n",
+       "      <td>5142243247</td>\n",
+       "      <td>2010-12-31</td>\n",
+       "      <td>9108347680006</td>\n",
+       "      <td>STAPLES NATIONAL #471</td>\n",
+       "      <td>NJ</td>\n",
+       "      <td>07606</td>\n",
+       "      <td>P</td>\n",
+       "      <td>554.64</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>96753 rows × 10 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       Recnum     Cardnum       Date       Merchnum        Merch description  \\\n",
+       "0           1  5142190439 2010-01-01  5509006296254   FEDEX SHP 12/23/09 AB#   \n",
+       "1           2  5142183973 2010-01-01    61003026333  SERVICE MERCHANDISE #81   \n",
+       "2           3  5142131721 2010-01-01  4503082993600        OFFICE DEPOT #191   \n",
+       "3           4  5142148452 2010-01-01  5509006296254   FEDEX SHP 12/28/09 AB#   \n",
+       "4           5  5142190439 2010-01-01  5509006296254   FEDEX SHP 12/23/09 AB#   \n",
+       "...       ...         ...        ...            ...                      ...   \n",
+       "96748   96749  5142276053 2010-12-31  3500000006160   BEST BUY      00001610   \n",
+       "96749   96750  5142225701 2010-12-31  8090710030950   MARKUS OFFICE SUPPLIES   \n",
+       "96750   96751  5142226486 2010-12-31  4503057341100            TECH PAC, INC   \n",
+       "96751   96752  5142244619 2010-12-31  8834000695412                  BUY.COM   \n",
+       "96752   96753  5142243247 2010-12-31  9108347680006    STAPLES NATIONAL #471   \n",
+       "\n",
+       "      Merch state Merch zip Transtype   Amount  Fraud  \n",
+       "0              TN     38118         P     3.62      0  \n",
+       "1              MA     01803         P    31.42      0  \n",
+       "2              MD     20706         P   178.49      0  \n",
+       "3              TN     38118         P     3.62      0  \n",
+       "4              TN     38118         P     3.62      0  \n",
+       "...           ...       ...       ...      ...    ...  \n",
+       "96748          KY     41042         P    84.79      0  \n",
+       "96749          OH     45248         P   118.75      0  \n",
+       "96750          OH     45150         P   363.56      0  \n",
+       "96751          CA     92656         P  2202.03      0  \n",
+       "96752          NJ     07606         P   554.64      0  \n",
+       "\n",
+       "[96753 rows x 10 columns]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.528186Z",
+     "start_time": "2021-04-15T03:10:32.498836Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 96753 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96753 non-null  int64         \n",
+      " 1   Cardnum            96753 non-null  int64         \n",
+      " 2   Date               96753 non-null  datetime64[ns]\n",
+      " 3   Merchnum           93378 non-null  object        \n",
+      " 4   Merch description  96753 non-null  object        \n",
+      " 5   Merch state        95558 non-null  object        \n",
+      " 6   Merch zip          92097 non-null  object        \n",
+      " 7   Transtype          96753 non-null  object        \n",
+      " 8   Amount             96753 non-null  float64       \n",
+      " 9   Fraud              96753 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 7.4+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Cleaning"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.559035Z",
+     "start_time": "2021-04-15T03:10:32.528929Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Recnum</th>\n",
+       "      <th>Cardnum</th>\n",
+       "      <th>Date</th>\n",
+       "      <th>Merchnum</th>\n",
+       "      <th>Merch description</th>\n",
+       "      <th>Merch state</th>\n",
+       "      <th>Merch zip</th>\n",
+       "      <th>Transtype</th>\n",
+       "      <th>Amount</th>\n",
+       "      <th>Fraud</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>52714</th>\n",
+       "      <td>52715</td>\n",
+       "      <td>5142189135</td>\n",
+       "      <td>2010-07-13</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>INTERMEXICO</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>P</td>\n",
+       "      <td>3102045.53</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       Recnum     Cardnum       Date Merchnum Merch description Merch state  \\\n",
+       "52714   52715  5142189135 2010-07-13      NaN       INTERMEXICO         NaN   \n",
+       "\n",
+       "      Merch zip Transtype      Amount  Fraud  \n",
+       "52714       NaN         P  3102045.53      0  "
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# remove the single Amount outlier\n",
+    "data.loc[data['Amount'] == data['Amount'].max()]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.575037Z",
+     "start_time": "2021-04-15T03:10:32.559963Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "data.drop([52714], inplace = True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.591110Z",
+     "start_time": "2021-04-15T03:10:32.575963Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# only keep 'P' transactions\n",
+    "data = data.loc[data['Transtype'] == 'P']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-14T06:29:39.413667Z",
+     "start_time": "2021-04-14T06:29:39.399704Z"
+    }
+   },
+   "source": [
+    "## Merchnum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.623224Z",
+     "start_time": "2021-04-15T03:10:32.592152Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 96397 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96397 non-null  int64         \n",
+      " 1   Cardnum            96397 non-null  int64         \n",
+      " 2   Date               96397 non-null  datetime64[ns]\n",
+      " 3   Merchnum           93199 non-null  object        \n",
+      " 4   Merch description  96397 non-null  object        \n",
+      " 5   Merch state        95377 non-null  object        \n",
+      " 6   Merch zip          92097 non-null  object        \n",
+      " 7   Transtype          96397 non-null  object        \n",
+      " 8   Amount             96397 non-null  float64       \n",
+      " 9   Fraud              96397 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 8.1+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.733433Z",
+     "start_time": "2021-04-15T03:10:32.625154Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "merchdes_merchnum = {}\n",
+    "for index, merchdes in data[data['Merch description'].notnull()]['Merch description'].items():\n",
+    "    if merchdes not in merchdes_merchnum :\n",
+    "        merchdes_merchnum[merchdes] = data.loc[index, 'Merchnum']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.859893Z",
+     "start_time": "2021-04-15T03:10:32.734438Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# fill in by mapping with Merch description\n",
+    "data['Merchnum'] = data['Merchnum'].fillna(data['Merch description'].map(merchdes_merchnum))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.891207Z",
+     "start_time": "2021-04-15T03:10:32.860899Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# assign unknown for adjustments transactions\n",
+    "data['Merchnum'] = data['Merchnum'].mask(data['Merch description'] == 'RETAIL CREDIT ADJUSTMENT', 'unknown')\n",
+    "data['Merchnum'] = data['Merchnum'].mask(data['Merch description'] == 'RETAIL DEBIT ADJUSTMENT', 'unknown')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.922787Z",
+     "start_time": "2021-04-15T03:10:32.892250Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 96397 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96397 non-null  int64         \n",
+      " 1   Cardnum            96397 non-null  int64         \n",
+      " 2   Date               96397 non-null  datetime64[ns]\n",
+      " 3   Merchnum           94182 non-null  object        \n",
+      " 4   Merch description  96397 non-null  object        \n",
+      " 5   Merch state        95377 non-null  object        \n",
+      " 6   Merch zip          92097 non-null  object        \n",
+      " 7   Transtype          96397 non-null  object        \n",
+      " 8   Amount             96397 non-null  float64       \n",
+      " 9   Fraud              96397 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 10.6+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Merch state"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:32.938085Z",
+     "start_time": "2021-04-15T03:10:32.923788Z"
+    },
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['00926', '00929', '01400', '65132', '86899', '23080', '60528',\n",
+       "       '00934', '00902', '00738', '90805', '76302', '00009', '00914',\n",
+       "       '00006', '95461', '50823', '00002', '48700', '00680', '00001',\n",
+       "       '00681', '00623', '00726', '00936', '12108', '00791', '00907',\n",
+       "       '00922', '00920', '00003', '00801', '00008', '31040', '38117',\n",
+       "       '41160'], dtype=object)"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data[(data['Merch state'].isnull()) & (data['Merch zip'].notnull())]['Merch zip'].unique()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.000046Z",
+     "start_time": "2021-04-15T03:10:32.939172Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# dict for mapping\n",
+    "zip_state = {}\n",
+    "for index, zip5 in data[data['Merch zip'].notnull()]['Merch zip'].items():\n",
+    "    if zip5 not in zip_state:\n",
+    "        zip_state[zip5] = data.loc[index, 'Merch state']\n",
+    "        \n",
+    "zip_state['00926'] = 'PR'\n",
+    "zip_state['00929'] = 'PR'\n",
+    "zip_state['00934'] = 'PR'\n",
+    "zip_state['00902'] = 'PR'\n",
+    "zip_state['00738'] = 'PR'\n",
+    "zip_state['90805'] = 'CA'\n",
+    "zip_state['76302'] = 'TX'\n",
+    "zip_state['00914'] = 'PR'\n",
+    "zip_state['95461'] = 'CA'\n",
+    "zip_state['00680'] = 'PR'\n",
+    "zip_state['00623'] = 'PR'\n",
+    "zip_state['00726'] = 'PR'\n",
+    "zip_state['00936'] = 'PR'\n",
+    "zip_state['12108'] = 'NY'\n",
+    "zip_state['00791'] = 'PR'\n",
+    "zip_state['00907'] = 'PR'\n",
+    "zip_state['00922'] = 'PR'\n",
+    "zip_state['00920'] = 'PR'\n",
+    "zip_state['00801'] = 'VI'\n",
+    "zip_state['31040'] = 'GA'\n",
+    "zip_state['41160'] = 'KY'\n",
+    "zip_state['00681'] = 'PR'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.093455Z",
+     "start_time": "2021-04-15T03:10:33.000958Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "merchnum_state = {}\n",
+    "for index, merchnum in data[data['Merchnum'].notnull()]['Merchnum'].items():\n",
+    "    if merchnum not in merchnum_state :\n",
+    "        merchnum_state [merchnum] = data.loc[index, 'Merch state']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.187509Z",
+     "start_time": "2021-04-15T03:10:33.094662Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "merchdes_state = {}\n",
+    "for index, merchdes in data[data['Merch description'].notnull()]['Merch description'].items():\n",
+    "    if merchdes not in merchdes_state :\n",
+    "        merchdes_state [merchdes] = data.loc[index, 'Merch state']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.234273Z",
+     "start_time": "2021-04-15T03:10:33.188417Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# fill in by mapping with zip, merchnum and merch description\n",
+    "data['Merch state'] = data['Merch state'].fillna(data['Merch zip'].map(zip_state))\n",
+    "data['Merch state'] = data['Merch state'].fillna(data['Merchnum'].map(merchnum_state))\n",
+    "data['Merch state'] = data['Merch state'].fillna(data['Merch description'].map(merchdes_state))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.266178Z",
+     "start_time": "2021-04-15T03:10:33.235282Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# assign unknown for adjustments transactions\n",
+    "data['Merch state'] = data['Merch state'].mask(data['Merch description'] == 'RETAIL CREDIT ADJUSTMENT', 'unknown')\n",
+    "data['Merch state'] = data['Merch state'].mask(data['Merch description'] == 'RETAIL DEBIT ADJUSTMENT', 'unknown')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.296014Z",
+     "start_time": "2021-04-15T03:10:33.266972Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 96397 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96397 non-null  int64         \n",
+      " 1   Cardnum            96397 non-null  int64         \n",
+      " 2   Date               96397 non-null  datetime64[ns]\n",
+      " 3   Merchnum           94182 non-null  object        \n",
+      " 4   Merch description  96397 non-null  object        \n",
+      " 5   Merch state        96135 non-null  object        \n",
+      " 6   Merch zip          92097 non-null  object        \n",
+      " 7   Transtype          96397 non-null  object        \n",
+      " 8   Amount             96397 non-null  float64       \n",
+      " 9   Fraud              96397 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 10.6+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.468231Z",
+     "start_time": "2021-04-15T03:10:33.297914Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# drop non-US states\n",
+    "# might actually be useful cus fraud could be foreign transactions\n",
+    "# maybe put a 'foreign' tag or just leave them as is\n",
+    "\n",
+    "states = [\"AL\", \"AK\", \"AZ\", \"AR\", \"CA\", \"CO\", \"CT\", \"DC\", \"DE\", \"FL\", \"GA\", \n",
+    "          \"HI\", \"ID\", \"IL\", \"IN\", \"IA\", \"KS\", \"KY\", \"LA\", \"ME\", \"MD\", \n",
+    "          \"MA\", \"MI\", \"MN\", \"MS\", \"MO\", \"MT\", \"NE\", \"NV\", \"NH\", \"NJ\", \n",
+    "          \"NM\", \"NY\", \"NC\", \"ND\", \"OH\", \"OK\", \"OR\", \"PA\", \"RI\", \"SC\", \n",
+    "          \"SD\", \"TN\", \"TX\", \"UT\", \"VT\", \"VA\", \"WA\", \"WV\", \"WI\", \"WY\", \n",
+    "          'VI', 'PR', np.nan, 'unknown']\n",
+    "\n",
+    "for index, state in data['Merch state'].items():\n",
+    "    if state not in states:\n",
+    "        data.loc[index, 'Merch state'] = 'foreign'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.483490Z",
+     "start_time": "2021-04-15T03:10:33.470361Z"
+    },
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "TN         12038\n",
+       "VA          7849\n",
+       "CA          6823\n",
+       "IL          6513\n",
+       "MD          5397\n",
+       "GA          5020\n",
+       "PA          4902\n",
+       "NJ          3912\n",
+       "TX          3790\n",
+       "NC          3322\n",
+       "WA          3300\n",
+       "DC          3206\n",
+       "OH          3132\n",
+       "NY          2435\n",
+       "MO          2420\n",
+       "FL          2143\n",
+       "MA          2081\n",
+       "MI          2033\n",
+       "CO          1987\n",
+       "OR          1510\n",
+       "KS          1236\n",
+       "WI           953\n",
+       "CT           952\n",
+       "MN           939\n",
+       "UT           939\n",
+       "NH           908\n",
+       "NV           726\n",
+       "unknown      691\n",
+       "KY           521\n",
+       "RI           467\n",
+       "OK           442\n",
+       "AZ           346\n",
+       "AL           345\n",
+       "NE           301\n",
+       "IN           265\n",
+       "MS           244\n",
+       "foreign      192\n",
+       "WV           181\n",
+       "ID           176\n",
+       "LA           173\n",
+       "SD           166\n",
+       "AK           164\n",
+       "IA           163\n",
+       "SC           154\n",
+       "ME           128\n",
+       "MT           123\n",
+       "NM           115\n",
+       "VT            85\n",
+       "DE            70\n",
+       "ND            43\n",
+       "PR            40\n",
+       "AR            34\n",
+       "WY            27\n",
+       "HI            11\n",
+       "VI             2\n",
+       "Name: Merch state, dtype: int64"
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data['Merch state'].value_counts()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-14T06:30:03.009701Z",
+     "start_time": "2021-04-14T06:30:02.997700Z"
+    }
+   },
+   "source": [
+    "## Merch zip"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.514727Z",
+     "start_time": "2021-04-15T03:10:33.485002Z"
+    },
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 96397 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96397 non-null  int64         \n",
+      " 1   Cardnum            96397 non-null  int64         \n",
+      " 2   Date               96397 non-null  datetime64[ns]\n",
+      " 3   Merchnum           94182 non-null  object        \n",
+      " 4   Merch description  96397 non-null  object        \n",
+      " 5   Merch state        96135 non-null  object        \n",
+      " 6   Merch zip          92097 non-null  object        \n",
+      " 7   Transtype          96397 non-null  object        \n",
+      " 8   Amount             96397 non-null  float64       \n",
+      " 9   Fraud              96397 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 10.6+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.624949Z",
+     "start_time": "2021-04-15T03:10:33.515832Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "merchnum_zip = {}\n",
+    "for index, merchnum in data[data['Merchnum'].notnull()]['Merchnum'].items():\n",
+    "    if merchnum not in merchnum_zip :\n",
+    "        merchnum_zip [merchnum] = data.loc[index, 'Merch zip']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.736154Z",
+     "start_time": "2021-04-15T03:10:33.625949Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "merchdes_zip = {}\n",
+    "for index, merchdes in data[data['Merch description'].notnull()]['Merch description'].items():\n",
+    "    if merchdes not in merchdes_zip :\n",
+    "        merchdes_zip [merchdes] = data.loc[index, 'Merch zip']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.797714Z",
+     "start_time": "2021-04-15T03:10:33.737166Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# fill in by mapping with merchnum and merch description\n",
+    "data['Merch zip'] = data['Merch zip'].fillna(data['Merchnum'].map(merchnum_zip))\n",
+    "data['Merch zip'] = data['Merch zip'].fillna(data['Merch description'].map(merchdes_zip))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.828600Z",
+     "start_time": "2021-04-15T03:10:33.799728Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# assign unknown for adjustments transactions\n",
+    "data['Merch zip'] = data['Merch zip'].mask(data['Merch zip'] == 'RETAIL CREDIT ADJUSTMENT', 'unknown')\n",
+    "data['Merch zip'] = data['Merch zip'].mask(data['Merch zip'] == 'RETAIL DEBIT ADJUSTMENT', 'unknown')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.858985Z",
+     "start_time": "2021-04-15T03:10:33.831783Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 96397 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96397 non-null  int64         \n",
+      " 1   Cardnum            96397 non-null  int64         \n",
+      " 2   Date               96397 non-null  datetime64[ns]\n",
+      " 3   Merchnum           94182 non-null  object        \n",
+      " 4   Merch description  96397 non-null  object        \n",
+      " 5   Merch state        96135 non-null  object        \n",
+      " 6   Merch zip          93739 non-null  object        \n",
+      " 7   Transtype          96397 non-null  object        \n",
+      " 8   Amount             96397 non-null  float64       \n",
+      " 9   Fraud              96397 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 10.6+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:33.907127Z",
+     "start_time": "2021-04-15T03:10:33.861037Z"
+    }
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 96397 entries, 0 to 96752\n",
+      "Data columns (total 10 columns):\n",
+      " #   Column             Non-Null Count  Dtype         \n",
+      "---  ------             --------------  -----         \n",
+      " 0   Recnum             96397 non-null  int64         \n",
+      " 1   Cardnum            96397 non-null  int64         \n",
+      " 2   Date               96397 non-null  datetime64[ns]\n",
+      " 3   Merchnum           96397 non-null  object        \n",
+      " 4   Merch description  96397 non-null  object        \n",
+      " 5   Merch state        96397 non-null  object        \n",
+      " 6   Merch zip          96397 non-null  object        \n",
+      " 7   Transtype          96397 non-null  object        \n",
+      " 8   Amount             96397 non-null  float64       \n",
+      " 9   Fraud              96397 non-null  int64         \n",
+      "dtypes: datetime64[ns](1), float64(1), int64(3), object(5)\n",
+      "memory usage: 10.6+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# fill the rest with unknown\n",
+    "data = data.fillna('unknown')\n",
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-04-15T03:10:34.649180Z",
+     "start_time": "2021-04-15T03:10:33.908362Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "data.to_csv('cleaned_data.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5"
+  },
+  "toc": {
+   "base_numbering": 1,
+   "nav_menu": {},
+   "number_sections": true,
+   "sideBar": true,
+   "skip_h1_title": false,
+   "title_cell": "Table of Contents",
+   "title_sidebar": "Contents",
+   "toc_cell": false,
+   "toc_position": {},
+   "toc_section_display": true,
+   "toc_window_display": false
+  },
+  "varInspector": {
+   "cols": {
+    "lenName": 16,
+    "lenType": 16,
+    "lenVar": 40
+   },
+   "kernels_config": {
+    "python": {
+     "delete_cmd_postfix": "",
+     "delete_cmd_prefix": "del ",
+     "library": "var_list.py",
+     "varRefreshCmd": "print(var_dic_list())"
+    },
+    "r": {
+     "delete_cmd_postfix": ") ",
+     "delete_cmd_prefix": "rm(",
+     "library": "var_list.r",
+     "varRefreshCmd": "cat(var_dic_list()) "
+    }
+   },
+   "types_to_exclude": [
+    "module",
+    "function",
+    "builtin_function_or_method",
+    "instance",
+    "_Feature"
+   ],
+   "window_display": false
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
